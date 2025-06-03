@@ -29,6 +29,7 @@ export function MaterialsTable({ materials, onLoanMaterial, onEditMaterial }: Ma
           <TableHead>Nom</TableHead>
           <TableHead>Catégorie</TableHead>
           <TableHead>Lieu</TableHead>
+          <TableHead>Responsable</TableHead>
           <TableHead>Quantité</TableHead>
           <TableHead>Marque/Modèle</TableHead>
           <TableHead>État</TableHead>
@@ -54,6 +55,9 @@ export function MaterialsTable({ materials, onLoanMaterial, onEditMaterial }: Ma
                 <MapPin className="w-4 h-4 mr-1" />
                 {material.location}
               </div>
+            </TableCell>
+            <TableCell>
+              {material.responsible}
             </TableCell>
             <TableCell>{material.quantity}</TableCell>
             <TableCell>

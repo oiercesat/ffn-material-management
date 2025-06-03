@@ -64,10 +64,10 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
           <div className="space-y-2">
             <Label htmlFor="name">Nom du matériel *</Label>
             <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => updateFormData("name", e.target.value)}
-              placeholder="Ex: Chrono à Bande"
+                id="name"
+                value={formData.name}
+                onChange={(e) => updateFormData("name", e.target.value)}
+                placeholder="Ex: Chrono à Bande"
             />
           </div>
 
@@ -75,13 +75,13 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
             <Label htmlFor="category">Catégorie *</Label>
             <Select value={formData.category} onValueChange={(value) => updateFormData("category", value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionner une catégorie" />
+                <SelectValue placeholder="Sélectionner une catégorie"/>
               </SelectTrigger>
               <SelectContent>
                 {MATERIAL_CATEGORIES.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -90,52 +90,61 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
           <div className="space-y-2">
             <Label htmlFor="location">Lieu / Emplacement *</Label>
             <Input
-              id="location"
-              value={formData.location}
-              onChange={(e) => updateFormData("location", e.target.value)}
-              placeholder="Ex: Limoges, Bordeaux, etc."
+                id="location"
+                value={formData.location}
+                onChange={(e) => updateFormData("location", e.target.value)}
+                placeholder="Ex: Limoges, Bordeaux, etc."
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="quantity">Quantité</Label>
             <Input
-              id="quantity"
-              type="number"
-              value={formData.quantity}
-              onChange={(e) => updateFormData("quantity", Number.parseInt(e.target.value))}
-              min="1"
+                id="quantity"
+                type="number"
+                value={formData.quantity}
+                onChange={(e) => updateFormData("quantity", Number.parseInt(e.target.value))}
+                min="1"
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="brand">Marque</Label>
             <Input
-              id="brand"
-              value={formData.brand || ""}
-              onChange={(e) => updateFormData("brand", e.target.value)}
-              placeholder="Ex: ASUS, QUANTUM, etc."
+                id="brand"
+                value={formData.brand || ""}
+                onChange={(e) => updateFormData("brand", e.target.value)}
+                placeholder="Ex: ASUS, QUANTUM, etc."
             />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="model">Modèle</Label>
             <Input
-              id="model"
-              value={formData.model || ""}
-              onChange={(e) => updateFormData("model", e.target.value)}
-              placeholder="Ex: Startme V, Intel, etc."
+                id="model"
+                value={formData.model || ""}
+                onChange={(e) => updateFormData("model", e.target.value)}
+                placeholder="Ex: Startme V, Intel, etc."
             />
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="observations">Responsable</Label>
+          <Textarea
+              id="responsable"
+              value={formData.responsible || ""}
+              onChange={(e) => updateFormData("responsible", e.target.value)}
+              placeholder="Responsable du matériel (Nom et Prénom)"
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="observations">Observations</Label>
           <Textarea
-            id="observations"
-            value={formData.observations || ""}
-            onChange={(e) => updateFormData("observations", e.target.value)}
-            placeholder="Observations ou détails supplémentaires..."
+              id="observations"
+              value={formData.observations || ""}
+              onChange={(e) => updateFormData("observations", e.target.value)}
+              placeholder="Observations ou détails supplémentaires..."
           />
         </div>
 

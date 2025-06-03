@@ -47,7 +47,7 @@ export default function MaterialManagement() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Gestion du Matériel</h1>
+          <h1 className="text-3xl font-bold">Gestion du Matériel de la ligue nouvelle Aquitaine</h1>
           <p className="text-muted-foreground">Suivez et gérez votre inventaire de matériel sportif et technique</p>
         </div>
         <Dialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen}>
