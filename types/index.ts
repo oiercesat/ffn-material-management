@@ -26,6 +26,7 @@ export interface Material {
 export interface Loan {
   id: string
   materialId: string
+  quantity: number
   borrowerName: string
   borrowerContact: string
   loanDate: string

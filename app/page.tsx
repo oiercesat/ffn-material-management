@@ -18,14 +18,27 @@ import { StatsCards } from "@/components/dashboard/stats-cards"
 import { MaterialsTable } from "@/components/materials/materials-table"
 import { AddMaterialDialog } from "@/components/materials/add-material-dialog"
 import { LoansTable } from "@/components/loans/loans-table"
+import {LoanDialog} from "@/components/loans/loan-dialog";
 
 export default function MaterialManagement() {
   const { materials, addMaterial, getFilteredMaterials, getStats } = useMaterials()
-  const { loans, getActiveLoans, getOverdueLoans } = useLoans()
+  const { loans, getActiveLoans, getOverdueLoans, addLoan } = useLoans()
 
   const [activeCategory, setActiveCategory] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [isAddMaterialOpen, setIsAddMaterialOpen] = useState(false)
+  const [isLoanDialogOpen, setIsLoanDialogOpen] = useState(false)
+  const [loanMaterial, setLoanMaterial] = useState<Material >({
+    id: "",
+    name: "",
+    category: "",
+    location: "",
+    status: "disponible",
+    condition: "bon",
+    quantity: 1,
+    brand: "",
+    model: "",
+  })
 
   const filteredMaterials = getFilteredMaterials(activeCategory, searchTerm)
   const stats = getStats()
@@ -33,8 +46,8 @@ export default function MaterialManagement() {
   const overdueLoans = getOverdueLoans()
 
   const handleLoanMaterial = (material: Material) => {
-    // TODO: Implémenter la logique de prêt
-    console.log("Prêter matériel:", material)
+    setLoanMaterial(material)
+    setIsLoanDialogOpen(true)
   }
 
   const handleEditMaterial = (material: Material) => {
@@ -149,6 +162,8 @@ export default function MaterialManagement() {
 
       {/* Add Material Dialog */}
       <AddMaterialDialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen} onAddMaterial={addMaterial} />
+        {/* Loan Material Dialog */}
+      <LoanDialog open={isLoanDialogOpen} onOpenChange={setIsLoanDialogOpen} onAddLoan={addLoan} material={loanMaterial}/>
     </div>
   )
 }
