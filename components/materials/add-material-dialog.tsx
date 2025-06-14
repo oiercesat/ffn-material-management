@@ -26,7 +26,9 @@ interface AddMaterialDialogProps {
 export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMaterialDialogProps) {
   const [formData, setFormData] = useState<Omit<Material, "id">>({
     name: "",
+    serialNumber: "",
     category: "",
+    reference: "",
     location: "",
     status: "disponible",
     condition: "bon",
@@ -39,7 +41,9 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
       onAddMaterial(formData)
       setFormData({
         name: "",
+        serialNumber: "",
         category: "",
+        reference: "",
         location: "",
         status: "disponible",
         condition: "bon",
@@ -71,7 +75,15 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
                 placeholder="Ex: Chrono à Bande"
             />
           </div>
-
+          <div className="space-y-2">
+            <Label htmlFor="name">N° de série *</Label>
+            <Input
+                id="serialNumber"
+                value={formData.serialNumber}
+                onChange={(e) => updateFormData("serialNumber", e.target.value)}
+                placeholder="Ex: 1234567890"
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="category">Catégorie *</Label>
             <Select value={formData.category} onValueChange={(value) => updateFormData("category", value)}>
@@ -86,6 +98,15 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="name">Référence</Label>
+            <Input
+                id="subcategory"
+                value={formData.reference}
+                onChange={(e) => updateFormData("reference", e.target.value)}
+                placeholder="Ex: Ref12345, etc."
+            />
           </div>
 
           <div className="space-y-2">

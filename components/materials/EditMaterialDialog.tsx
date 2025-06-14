@@ -64,6 +64,15 @@ export function EditMaterialDialog({ open, onOpenChange, material, updateMateria
                 onChange={(e) => updateFormField("name", e.target.value)}
             />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="name">N° de série *</Label>
+            <Input
+                id="serialNumber"
+                value={formData.serialNumber}
+                onChange={(e) => updateFormField("serialNumber", e.target.value)}
+                placeholder="Ex: 1234567890"
+            />
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="category">Catégorie *</Label>
@@ -79,6 +88,15 @@ export function EditMaterialDialog({ open, onOpenChange, material, updateMateria
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="name">Référence</Label>
+            <Input
+                id="subcategory"
+                value={formData.reference}
+                onChange={(e) => updateFormField("reference", e.target.value)}
+                placeholder="Ex: Ref12345, etc."
+            />
           </div>
 
           <div className="space-y-2">
@@ -154,7 +172,7 @@ export function EditMaterialDialog({ open, onOpenChange, material, updateMateria
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>
             Annuler
           </Button>
           <Button onClick={handleSubmit}>Modifier</Button>

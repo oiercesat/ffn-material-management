@@ -1,6 +1,6 @@
 "use client"
 
-import {useEffect, useMemo, useState} from "react"
+import { useMemo, useState} from "react"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs"
 import {Button} from "@/components/ui/button"
@@ -99,7 +99,6 @@ function MaterialManagementContent() {
                 <TabsList>
                     <TabsTrigger value="materials">Inventaire</TabsTrigger>
                     <TabsTrigger value="loans">Prêts en cours</TabsTrigger>
-                    <TabsTrigger value="history">Historique</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="materials" className="space-y-4">
@@ -160,20 +159,6 @@ function MaterialManagementContent() {
                                 materials={materials}
                                 onReturnMaterial={handleReturnMaterial}
                             />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="history" className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Historique des prêts</CardTitle>
-                            <CardDescription>Historique complet des prêts et retours</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground text-center py-8">
-                                Fonctionnalité à implémenter
-                            </p>
                         </CardContent>
                     </Card>
                 </TabsContent>
