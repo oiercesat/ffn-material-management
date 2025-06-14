@@ -5,8 +5,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { MapPin, Edit } from "lucide-react"
-import { STATUS_COLORS, CONDITION_COLORS } from "@/constants"
-import {useEffect} from "react";
 
 interface MaterialsTableProps {
   materials: Material[]
@@ -67,10 +65,22 @@ export function MaterialsTable({ materials, onLoanMaterial, onEditMaterial }: Ma
                 : material.brand || material.model || "-"}
             </TableCell>
             <TableCell>
-              <Badge className={CONDITION_COLORS[material.condition]}>{material.condition}</Badge>
+              <Badge className={
+                material.condition === "excellent" ? "bg-green-100 text-green-800" :
+                material.condition === "bon" ? "bg-blue-100 text-blue-800":
+                material.condition === "moyen" ? "bg-yellow-100 text-yellow-800" :
+                material.condition === "mauvais" ? "bg-red-100 text-red-800":
+                "bg-blue-100 text-blue-800"// Default to "bon" if condition is unknown
+              }>{material.condition}</Badge>
             </TableCell>
             <TableCell>
-              <Badge className={STATUS_COLORS[material.status]}>{material.status}</Badge>
+              <Badge className={
+                material.status === "disponible" ? "bg-green-100 text-green-800" :
+                material.status === "prêté" ? "bg-blue-100 text-blue-800" :
+                material.status === "en_maintenance" ? "bg-yellow-100 text-yellow-800" :
+                material.status === "perdu" ? "bg-red-100 text-red-800" :
+                "bg-gray-100 text-gray-800" // Default to gray if status is unknown
+              }>{material.status}</Badge>
             </TableCell>
             <TableCell>
               <div className="flex space-x-2">
