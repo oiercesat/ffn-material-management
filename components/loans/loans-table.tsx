@@ -10,13 +10,14 @@ import { CONDITION_COLORS } from "@/constants"
 interface LoansTableProps {
   loans: Loan[]
   materials: Material[]
-  onReturnMaterial: (loanId: string, condition: MaterialCondition) => void
+  onReturnMaterial: (loanId: string, condition: MaterialCondition, materials: Material[], updateMaterial: (id: string, updates: Partial<Material>) => void) => void
 }
 
-export function LoansTable({ loans, materials, onReturnMaterial }: LoansTableProps) {
+export function LoansTable({ loans, materials, onReturnMaterial, updateMaterial }: LoansTableProps) {
   const getMaterialName = (materialId: string) => {
     return materials.find((m) => m.id === materialId)?.name || "Matériel inconnu"
   }
+  console.log("LoansTable rendered with loans:", loans)
 
   if (loans.length === 0) {
     return (
@@ -71,7 +72,7 @@ export function LoansTable({ loans, materials, onReturnMaterial }: LoansTablePro
               <Badge className={CONDITION_COLORS[loan.conditionAtLoan]}>{loan.conditionAtLoan}</Badge>
             </TableCell>
             <TableCell>
-              <Select onValueChange={(value) => onReturnMaterial(loan.id, value as MaterialCondition)}>
+              <Select onValueChange={(value) => onReturnMaterial(loan.id, value as MaterialCondition, materials, updateMaterial)}>
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Retourner" />
                 </SelectTrigger>
