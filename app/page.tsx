@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import {useEffect, useMemo, useState} from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { Plus, Search } from "lucide-react"
 
-import { useMaterials } from "@/hooks/use-materials"
+import { useMaterials, MaterialsProvider } from "@/providers/MaterialsProvider"
 import { useLoans } from "@/hooks/use-loans"
 import { MATERIAL_CATEGORIES } from "@/constants"
 import type { Material } from "@/types"
@@ -18,17 +18,18 @@ import { StatsCards } from "@/components/dashboard/stats-cards"
 import { MaterialsTable } from "@/components/materials/materials-table"
 import { AddMaterialDialog } from "@/components/materials/add-material-dialog"
 import { LoansTable } from "@/components/loans/loans-table"
-import {LoanDialog} from "@/components/loans/loan-dialog";
+import { LoanDialog } from "@/components/loans/loan-dialog"
+import { EditMaterialDialog } from "@/components/materials/EditMaterialDialog"
 
-export default function MaterialManagement() {
-  const { materials, addMaterial, getFilteredMaterials, getStats } = useMaterials()
-  const { loans, getActiveLoans, getOverdueLoans, addLoan } = useLoans()
+function MaterialManagementContent() {
+  const { materials, addMaterial, getFilteredMaterials, getStats, updateMaterial } = useMaterials()
+  const { getActiveLoans, getOverdueLoans, addLoan } = useLoans()
 
   const [activeCategory, setActiveCategory] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [isAddMaterialOpen, setIsAddMaterialOpen] = useState(false)
   const [isLoanDialogOpen, setIsLoanDialogOpen] = useState(false)
-  const [loanMaterial, setLoanMaterial] = useState<Material >({
+  const [loanMaterial, setLoanMaterial] = useState<Material>({
     id: "",
     name: "",
     category: "",
@@ -39,8 +40,9 @@ export default function MaterialManagement() {
     brand: "",
     model: "",
   })
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null)
 
-  const filteredMaterials = getFilteredMaterials(activeCategory, searchTerm)
   const stats = getStats()
   const activeLoans = getActiveLoans()
   const overdueLoans = getOverdueLoans()
@@ -51,10 +53,18 @@ export default function MaterialManagement() {
   }
 
   const handleEditMaterial = (material: Material) => {
-    // TODO: Implémenter la logique d'édition
-    console.log("Éditer matériel:", material)
+    setSelectedMaterial(material)
+    setEditDialogOpen(true)
   }
 
+const filteredMaterials = useMemo(
+  () => getFilteredMaterials(activeCategory, searchTerm),
+  [materials, activeCategory, searchTerm]
+)
+
+
+
+  console.log("Filtered Materials:", filteredMaterials)
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
@@ -93,7 +103,9 @@ export default function MaterialManagement() {
           <Card>
             <CardHeader>
               <CardTitle>Inventaire du matériel</CardTitle>
-              <CardDescription>Liste complète de votre matériel avec statut et emplacement</CardDescription>
+              <CardDescription>
+                Liste complète de votre matériel avec statut et emplacement
+              </CardDescription>
 
               {/* Filters */}
               <div className="flex flex-col sm:flex-row gap-4 mt-4">
@@ -135,13 +147,17 @@ export default function MaterialManagement() {
           <Card>
             <CardHeader>
               <CardTitle>Prêts en cours</CardTitle>
-              <CardDescription>Matériel actuellement prêté et dates de retour prévues</CardDescription>
+              <CardDescription>
+                Matériel actuellement prêté et dates de retour prévues
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <LoansTable
                 loans={activeLoans}
                 materials={materials}
-                onReturnMaterial={() => {}} // TODO: Implémenter
+                onReturnMaterial={() => {
+                  // TODO: Implémenter le retour
+                }}
               />
             </CardContent>
           </Card>
@@ -154,16 +170,45 @@ export default function MaterialManagement() {
               <CardDescription>Historique complet des prêts et retours</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-center py-8">Fonctionnalité à implémenter</p>
+              <p className="text-muted-foreground text-center py-8">
+                Fonctionnalité à implémenter
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
       {/* Add Material Dialog */}
-      <AddMaterialDialog open={isAddMaterialOpen} onOpenChange={setIsAddMaterialOpen} onAddMaterial={addMaterial} />
-        {/* Loan Material Dialog */}
-      <LoanDialog open={isLoanDialogOpen} onOpenChange={setIsLoanDialogOpen} onAddLoan={addLoan} material={loanMaterial}/>
+      <AddMaterialDialog
+        open={isAddMaterialOpen}
+        onOpenChange={setIsAddMaterialOpen}
+        onAddMaterial={addMaterial}
+      />
+
+      {/* Loan Material Dialog */}
+      <LoanDialog
+        open={isLoanDialogOpen}
+        onOpenChange={setIsLoanDialogOpen}
+        onAddLoan={addLoan}
+        material={loanMaterial}
+      />
+
+      {/* Edit Material Dialog */}
+      <EditMaterialDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        material={selectedMaterial}
+        updateMaterial={updateMaterial}
+      />
     </div>
+  )
+}
+
+// Wrapping the content with the provider
+export default function MaterialManagementPage() {
+  return (
+    <MaterialsProvider>
+      <MaterialManagementContent />
+    </MaterialsProvider>
   )
 }

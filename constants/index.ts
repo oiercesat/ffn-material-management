@@ -10,6 +10,13 @@ export const MATERIAL_CATEGORIES = [
   "Autre",
 ]
 
+export const MATERIAL_CONDITIONS = [
+    "excellent",
+    "bon",
+    "moyen",
+    "mauvais",
+    ]
+
 export const STATUS_COLORS = {
   disponible: "bg-green-100 text-green-800",
   prêté: "bg-blue-100 text-blue-800",

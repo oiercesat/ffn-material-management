@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { MapPin, Edit } from "lucide-react"
 import { STATUS_COLORS, CONDITION_COLORS } from "@/constants"
+import {useEffect} from "react";
 
 interface MaterialsTableProps {
   materials: Material[]
