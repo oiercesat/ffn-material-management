@@ -60,7 +60,7 @@ export function MaterialsTable({ materials, onLoanMaterial, onEditMaterial }: Ma
             <TableCell>
               {material.responsible}
             </TableCell>
-            <TableCell>{material.quantity}</TableCell>
+            <TableCell>{material.quantity - material.loanedQuantity}</TableCell>
             <TableCell>
               {material.brand && material.model
                 ? `${material.brand} ${material.model}`

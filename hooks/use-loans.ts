@@ -12,6 +12,7 @@ export function useLoans() {
       id: Date.now().toString(),
     }
     setLoans((prev) => [...prev, newLoan])
+
   }
 
   const returnMaterial = (loanId: string, returnCondition: MaterialCondition) => {

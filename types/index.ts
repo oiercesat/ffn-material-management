@@ -21,6 +21,7 @@ export interface Material {
   usage?: string
   observations?: string
   quantity: number
+  loanedQuantity?: number
 }
 
 export interface Loan {

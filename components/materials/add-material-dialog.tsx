@@ -31,6 +31,7 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     status: "disponible",
     condition: "bon",
     quantity: 1,
+    loanedQuantity: 0,
   })
 
   const handleSubmit = () => {

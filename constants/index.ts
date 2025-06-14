@@ -40,6 +40,7 @@ export const INITIAL_MATERIALS: Material[] = [
     status: "disponible",
     condition: "bon",
     quantity: 1,
+    loanedQuantity: 0,
   },
   {
     id: "2",
@@ -49,6 +50,7 @@ export const INITIAL_MATERIALS: Material[] = [
     status: "disponible",
     condition: "bon",
     quantity: 6,
+    loanedQuantity: 0,
   },
   {
     id: "3",
@@ -58,6 +60,7 @@ export const INITIAL_MATERIALS: Material[] = [
     status: "disponible",
     condition: "bon",
     quantity: 12,
+    loanedQuantity: 0,
   },
   {
     id: "4",
@@ -73,5 +76,6 @@ export const INITIAL_MATERIALS: Material[] = [
     responsible: "Toto",
     observations: "Avec wifi",
     quantity: 1,
+    loanedQuantity: 0,
   },
 ]

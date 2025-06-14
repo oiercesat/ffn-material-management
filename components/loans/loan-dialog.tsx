@@ -36,7 +36,10 @@ export function LoanDialog({open,material, onOpenChange, onAddLoan}: AddMaterial
 
     const handleSubmit = () => {
         if (formData.loanDate && formData.expectedReturnDate && formData.borrowerName) {
-            material.quantity -= formData.quantity
+            material.loanedQuantity = (material.loanedQuantity || 0) + formData.quantity
+            if (material.quantity - (formData.quantity+material.loanedQuantity) <= 0) {
+                material.status = "prêté"
+            }
             onAddLoan(formData)
             setFormData({
                 materialId: material.id,

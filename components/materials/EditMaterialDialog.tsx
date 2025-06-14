@@ -16,7 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { useMaterials } from "@/hooks/use-materials"
 
 interface EditMaterialDialogProps {
   open: boolean
