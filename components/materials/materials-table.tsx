@@ -26,6 +26,7 @@ export function MaterialsTable({ materials, onLoanMaterial, onEditMaterial }: Ma
       <TableHeader>
         <TableRow>
           <TableHead>Nom</TableHead>
+          <TableHead>Image</TableHead>
           <TableHead>Catégorie</TableHead>
           <TableHead>Lieu</TableHead>
           <TableHead>Responsable</TableHead>
@@ -47,6 +48,20 @@ export function MaterialsTable({ materials, onLoanMaterial, onEditMaterial }: Ma
                 )}
                 {material.reference && <div className="text-sm text-muted-foreground">Ref: {material.reference}</div>}
               </div>
+            </TableCell>
+            <TableCell>
+                {material.images && material.images.length > 0 ? (
+                    <img
+                    src={material.images[0]}
+                    alt={material.name}
+                    className="w-12 h-12 object-cover rounded"
+                    />
+                ) : (
+                    <div className="w-12 h-12 flex items-center justify-center bg-muted text-muted-foreground rounded">
+                    N/A
+                    </div>
+                )}
+
             </TableCell>
             <TableCell>{material.category}</TableCell>
             <TableCell>
