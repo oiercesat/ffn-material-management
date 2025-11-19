@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Dropzone, DropzoneContent, DropzoneEmptyState } from '@/components/ui/shadcn-io/dropzone'
 
 interface AddMaterialDialogProps {
   open: boolean
@@ -36,9 +37,44 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     loanedQuantity: 0,
   })
 
-  const handleSubmit = () => {
-    if (formData.name && formData.category && formData.location) {
-      onAddMaterial(formData)
+  const [files, setFiles] = useState<File[] | undefined>()
+  const [uploading, setUploading] = useState(false)
+
+  const handleDrop = (files: File[]) => {
+    setFiles(files)
+  }
+
+  const uploadFileToS3 = async (file: File): Promise<string> => {
+    const data = new FormData()
+    data.append("file", file)
+
+    const res = await fetch("/api/uploadFile", { method: "POST", body: data })
+    if (!res.ok) throw new Error("Erreur upload")
+
+    const result = await res.json()
+    return result.url as string
+  }
+
+  const handleSubmit = async () => {
+    if (!formData.name || !formData.category || !formData.location) return
+
+    setUploading(true)
+
+    try {
+      let uploadedUrls: string[] = []
+
+      if (files && files.length > 0) {
+        const uploads = await Promise.all(files.map(uploadFileToS3))
+        uploadedUrls = uploads
+      }
+
+      const newMaterial = {
+        ...formData,
+        images: uploadedUrls,
+      }
+
+      onAddMaterial(newMaterial)
+
       setFormData({
         name: "",
         serialNumber: "",
@@ -48,8 +84,15 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
         status: "disponible",
         condition: "bon",
         quantity: 1,
+        loanedQuantity: 0,
       })
+      setFiles(undefined)
       onOpenChange(false)
+    } catch (err) {
+      console.error("Erreur d'upload:", err)
+      alert("Erreur lors de l’upload du fichier")
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -66,115 +109,82 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-4">
+          {/* 🧱 Champs inchangés */}
           <div className="space-y-2">
             <Label htmlFor="name">Nom du matériel *</Label>
-            <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => updateFormData("name", e.target.value)}
-                placeholder="Ex: Chrono à Bande"
-            />
+            <Input id="name" value={formData.name} onChange={(e) => updateFormData("name", e.target.value)} placeholder="Ex: Chrono à Bande" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="name">N° de série *</Label>
-            <Input
-                id="serialNumber"
-                value={formData.serialNumber}
-                onChange={(e) => updateFormData("serialNumber", e.target.value)}
-                placeholder="Ex: 1234567890"
-            />
+            <Label htmlFor="serialNumber">N° de série *</Label>
+            <Input id="serialNumber" value={formData.serialNumber} onChange={(e) => updateFormData("serialNumber", e.target.value)} placeholder="Ex: 1234567890" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="category">Catégorie *</Label>
             <Select value={formData.category} onValueChange={(value) => updateFormData("category", value)}>
               <SelectTrigger>
-                <SelectValue placeholder="Sélectionner une catégorie"/>
+                <SelectValue placeholder="Sélectionner une catégorie" />
               </SelectTrigger>
               <SelectContent>
                 {MATERIAL_CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="name">Référence</Label>
-            <Input
-                id="subcategory"
-                value={formData.reference}
-                onChange={(e) => updateFormData("reference", e.target.value)}
-                placeholder="Ex: Ref12345, etc."
-            />
+            <Label htmlFor="reference">Référence</Label>
+            <Input id="reference" value={formData.reference} onChange={(e) => updateFormData("reference", e.target.value)} placeholder="Ex: Ref12345, etc." />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="location">Lieu / Emplacement *</Label>
-            <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => updateFormData("location", e.target.value)}
-                placeholder="Ex: Limoges, Bordeaux, etc."
-            />
+            <Input id="location" value={formData.location} onChange={(e) => updateFormData("location", e.target.value)} placeholder="Ex: Limoges, Bordeaux, etc." />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="quantity">Quantité</Label>
-            <Input
-                id="quantity"
-                type="number"
-                value={formData.quantity}
-                onChange={(e) => updateFormData("quantity", Number.parseInt(e.target.value))}
-                min="1"
-            />
+            <Input id="quantity" type="number" value={formData.quantity} onChange={(e) => updateFormData("quantity", Number.parseInt(e.target.value))} min="1" />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="brand">Marque</Label>
-            <Input
-                id="brand"
-                value={formData.brand || ""}
-                onChange={(e) => updateFormData("brand", e.target.value)}
-                placeholder="Ex: ASUS, QUANTUM, etc."
-            />
+            <Input id="brand" value={formData.brand || ""} onChange={(e) => updateFormData("brand", e.target.value)} placeholder="Ex: ASUS, QUANTUM, etc." />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="model">Modèle</Label>
-            <Input
-                id="model"
-                value={formData.model || ""}
-                onChange={(e) => updateFormData("model", e.target.value)}
-                placeholder="Ex: Startme V, Intel, etc."
-            />
+            <Input id="model" value={formData.model || ""} onChange={(e) => updateFormData("model", e.target.value)} placeholder="Ex: Startme V, Intel, etc." />
           </div>
         </div>
+
         <div className="space-y-2">
-          <Label htmlFor="observations">Responsable</Label>
-          <Textarea
-              id="responsable"
-              value={formData.responsible || ""}
-              onChange={(e) => updateFormData("responsible", e.target.value)}
-              placeholder="Responsable du matériel (Nom et Prénom)"
-          />
+          <Label htmlFor="responsible">Responsable</Label>
+          <Textarea id="responsible" value={formData.responsible || ""} onChange={(e) => updateFormData("responsible", e.target.value)} placeholder="Responsable du matériel (Nom et Prénom)" />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="observations">Observations</Label>
-          <Textarea
-              id="observations"
-              value={formData.observations || ""}
-              onChange={(e) => updateFormData("observations", e.target.value)}
-              placeholder="Observations ou détails supplémentaires..."
-          />
+          <Textarea id="observations" value={formData.observations || ""} onChange={(e) => updateFormData("observations", e.target.value)} placeholder="Observations ou détails supplémentaires..." />
         </div>
 
+        <Dropzone
+          accept={{ 'image/*': [] }}
+          maxFiles={10}
+          maxSize={1024 * 1024 * 10}
+          minSize={1024}
+          onDrop={handleDrop}
+          onError={console.error}
+          src={files}
+        >
+          <DropzoneEmptyState />
+          <DropzoneContent />
+        </Dropzone>
+
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={uploading}>
             Annuler
           </Button>
-          <Button onClick={handleSubmit}>Ajouter</Button>
+          <Button onClick={handleSubmit} disabled={uploading}>
+            {uploading ? "Upload..." : "Ajouter"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
