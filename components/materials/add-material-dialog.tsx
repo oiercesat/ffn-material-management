@@ -37,6 +37,9 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     loanedQuantity: 0,
   })
 
+  const [showResizeModal, setShowResizeModal] = useState(false)
+  const [errorFile, setErrorFile] = useState<File | null>(null)
+
   const [files, setFiles] = useState<File[] | undefined>()
   const [uploading, setUploading] = useState(false)
 
@@ -99,6 +102,38 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
   const updateFormData = (field: keyof typeof formData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
+
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result?.toString().split(",")[1] as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const handleResize = async (file: File | null) => {
+    if (!file) return;
+
+    const base64 = await fileToBase64(file);
+
+    const res = await fetch("/api/resize", {
+      method: "POST",
+      body: JSON.stringify({
+        name: file.name,
+        data: base64
+      })
+    });
+
+    const json = await res.json();
+    const resizedUrl = json.url;
+
+    const resizedFile = await fetch(resizedUrl)
+      .then(r => r.blob())
+      .then(b => new File([b], file.name, { type: "image/jpeg" }));
+
+    setFiles([resizedFile]);
+  };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -168,10 +203,22 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
         <Dropzone
           accept={{ 'image/*': [] }}
           maxFiles={10}
-          maxSize={1024 * 1024 * 10}
+          maxSize={1024 * 1024 * 2}
           minSize={1024}
           onDrop={handleDrop}
-          onError={console.error}
+          onDropRejected={(rejections) => {
+            const first = rejections[0];
+            const error = first?.errors?.[0];
+            const file = first?.file;
+
+            if (error?.code === "file-too-large") {
+              setErrorFile(file);
+              setShowResizeModal(true);
+              return;
+            }
+
+            alert(error?.message || "Erreur inconnue");
+          }}
           src={files}
         >
           <DropzoneEmptyState />
@@ -187,6 +234,32 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
           </Button>
         </DialogFooter>
       </DialogContent>
+      <Dialog open={showResizeModal} onOpenChange={setShowResizeModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Image trop grande</DialogTitle>
+            <DialogDescription>
+              L’image dépasse la taille maximale autorisée.  
+              Souhaitez-vous la redimensionner automatiquement ?
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResizeModal(false)}>
+              Annuler
+            </Button>
+
+            <Button
+              onClick={() => {
+                handleResize(errorFile)
+                setShowResizeModal(false)
+              }}
+            >
+              Redimensionner
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }
