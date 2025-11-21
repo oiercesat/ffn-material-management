@@ -8,7 +8,7 @@ S3_SECRET_KEY=admin123
 S3_BUCKET=material
 S3_REGION=eu-west-1
 ```
-#COMMANDES
+# COMMANDES
 Commandes pour héberger l'app sur le s3 :
 /!\ A faire depuis la racine du projet.
 
