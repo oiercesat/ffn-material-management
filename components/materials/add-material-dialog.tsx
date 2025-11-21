@@ -45,15 +45,24 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
   }
 
   const uploadFileToS3 = async (file: File): Promise<string> => {
-    const data = new FormData()
-    data.append("file", file)
+    const key = `uploads/${file.name}`;
+    const bucketEndpoint = `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET}`;
 
-    const res = await fetch("/api/uploadFile", { method: "POST", body: data })
-    if (!res.ok) throw new Error("Erreur upload")
+    const res = await fetch(`${bucketEndpoint}/${encodeURIComponent(key)}`, {
+      method: "PUT",
+      body: file,
+      headers: {
+        "Content-Type": file.type,
+      },
+    });
 
-    const result = await res.json()
-    return result.url as string
-  }
+    if (!res.ok) {
+      throw new Error(`Erreur upload: ${res.status} ${res.statusText}`);
+    }
+
+    // Retourne directement l’URL construite
+    return `${bucketEndpoint}/${encodeURIComponent(key)}`;
+  };
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.category || !formData.location) return
