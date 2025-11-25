@@ -8,3 +8,16 @@ S3_SECRET_KEY=admin123
 S3_BUCKET=material
 S3_REGION=eu-west-1
 ```
+# COMMANDES
+Commandes pour héberger l'app sur le s3 :
+/!\ A faire depuis la racine du projet.
+
+```bash
+aws --endpoint-url=http://localhost:4566 s3 mb s3://my-next ##Créer le bucket next
+aws --endpoint-url=http://localhost:4566 s3 mb s3://images ##Créer le bucket images
+
+aws --endpoint-url=http://localhost:4566 s3api put-bucket-website --bucket mon-next --website-configuration file://website.json ##Config le bucket next pour afficher un site web static
+
+npm run build
+aws --endpoint-url=http://localhost:4566 s3 sync out/ s3://mon-next ##Push le build sur le s3
+```
