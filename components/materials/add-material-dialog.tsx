@@ -122,28 +122,44 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
   const handleResize = async (file: File | null) => {
     if (!file) return;
 
-    const base64 = await fileToBase64(file);
+    try {
+      const base64 = await fileToBase64(file);
+      
+      // URL de votre Lambda
+      const res = await fetch("http://localhost:4566/restapis/u8kwtam4lj/test/_user_request_/resize", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageData: base64,
+          width: 800,
+          height: 600,
+          format: 'jpeg',
+          quality: 80
+        })
+      });
 
-    const res = await fetch("/api/resize", {
-      method: "POST",
-      body: JSON.stringify({
-        filename: file.name,
-        data: base64
-      })
-    });
+      if (!res.ok) {
+        throw new Error(`API Error: ${res.status}`);
+      }
 
-    const json = await res.json();
-    console.log("Réponse Lambda:", json);
+      const json = await res.json();
+      console.log("Réponse Lambda:", json);
 
-    // Télécharger le fichier si besoin
-    const resizedFile = await fetch(json.url)
-      .then(r => r.blob())
-      .then(b => new File([b], file.name, { type: "image/jpeg" }));
+      if (json.success) {
+        // Récupérer l'image redimensionnée depuis S3
+        const resizedImageUrl = json.data.s3Url;
+        console.log("Image redimensionnée disponible à:", resizedImageUrl);
+        
+        // Vous pouvez maintenant utiliser cette URL pour afficher l'image
+        // ou la télécharger pour l'ajouter à vos files
+      }
 
-    setFiles([resizedFile]);
+    } catch (error) {
+      console.error("Erreur resize:", error);
+    }
   };
-
-
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
