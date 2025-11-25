@@ -103,13 +103,21 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result?.toString().split(",")[1] as string);
-      reader.onerror = reject;
       reader.readAsDataURL(file);
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        } else {
+          reject('Erreur de lecture du fichier');
+        }
+      }
+      reader.onerror = (error) => reject(error);
     });
+  };
 
   const handleResize = async (file: File | null) => {
     if (!file) return;
@@ -119,20 +127,22 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     const res = await fetch("/api/resize", {
       method: "POST",
       body: JSON.stringify({
-        name: file.name,
+        filename: file.name,
         data: base64
       })
     });
 
     const json = await res.json();
-    const resizedUrl = json.url;
+    console.log("Réponse Lambda:", json);
 
-    const resizedFile = await fetch(resizedUrl)
+    // Télécharger le fichier si besoin
+    const resizedFile = await fetch(json.url)
       .then(r => r.blob())
       .then(b => new File([b], file.name, { type: "image/jpeg" }));
 
     setFiles([resizedFile]);
   };
+
 
 
   return (
