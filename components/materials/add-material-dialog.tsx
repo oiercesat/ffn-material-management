@@ -44,25 +44,33 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     setFiles(files)
   }
 
-  const uploadFileToS3 = async (file: File): Promise<string> => {
-    const key = `uploads/${file.name}`;
-    const bucketEndpoint = `${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET}`;
+  const uploadFileToS3 = async function uploadFile(file: File): Promise<string> {
+    const apiURL = process.env.NEXT_PUBLIC_UPLOAD_API;
 
-    const res = await fetch(`${bucketEndpoint}/${encodeURIComponent(key)}`, {
-      method: "PUT",
+    if (!apiURL) {
+      throw new Error("API URL is not configured");
+    }
+
+    const res = await fetch(apiURL, {
+      method: "POST",
       body: file,
       headers: {
         "Content-Type": file.type,
-      },
+      }
     });
 
     if (!res.ok) {
-      throw new Error(`Erreur upload: ${res.status} ${res.statusText}`);
+      throw new Error(`Upload failed: ${res.status} ${res.statusText}`);
     }
 
-    // Retourne directement l’URL construite
-    return `${bucketEndpoint}/${encodeURIComponent(key)}`;
-  };
+    const json = await res.json();
+    
+    if (json.error) {
+      throw new Error(json.error);
+    }
+
+    return json.publicUrl || json.location || json.fileName;
+  }
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.category || !formData.location) return
