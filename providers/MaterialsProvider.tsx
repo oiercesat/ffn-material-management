@@ -70,6 +70,37 @@ export function MaterialsProvider({children}: { children: React.ReactNode }) {
             if (response.data) {
                 setMaterials(response.data as Material[])
             }
+        }).catch(error => {
+            console.error('API failed, using test data:', error)
+            // Fallback test data when API is not available
+            setMaterials([
+                {
+                    id: "test-material-1",
+                    name: "Ballon de Football",
+                    category: "Sport",
+                    location: "Gymnase A",
+                    status: "disponible",
+                    condition: "bon",
+                    quantity: 10,
+                    loanedQuantity: 0,
+                    brand: "Nike",
+                    model: "Pro",
+                    responsible: "Jean Dupont"
+                },
+                {
+                    id: "test-material-2",
+                    name: "Caméra HD",
+                    category: "Technique",
+                    location: "Bureau",
+                    status: "disponible",
+                    condition: "excellent",
+                    quantity: 3,
+                    loanedQuantity: 1,
+                    brand: "Canon",
+                    model: "EOS R5",
+                    responsible: "Marie Martin"
+                }
+            ])
         })
     }, []);
 

@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4566/restapis/YOUR_API_ID/dev/_user_request_";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_BD || 'http://localhost:3000/api';
 
 interface ApiResponse<T> {
   data?: T;
@@ -94,4 +94,4 @@ class ApiClient {
   }
 }
 
-export const apiClient = new ApiClient(API_BASE_URL);
+export const apiClient = new ApiClient(API_BASE_URL!);

@@ -42,30 +42,28 @@ export function LoanDialog({open, material, onOpenChange, onAddLoan}: AddMateria
 
 
     const handleSubmit = () => {
-        if (!(formData) || formData.loanDate && formData.expectedReturnDate && formData.borrowerName) {
-            if (formData) {
-                material.loanedQuantity = (material.loanedQuantity || 0) + formData.quantity
-            }
-            if (material.quantity - (!(formData) || formData.quantity + material.loanedQuantity) <= 0) {
-                material.status = "prêté"
-            }
-            onAddLoan(formData)
-            setFormData({
-                materialId: material.id,
-                quantity: 1,
-                borrowerName: "",
-                borrowerContact: "",
-                loanDate: new Date().toISOString().split("T")[0],
-                expectedReturnDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split("T")[0],
-                conditionAtLoan: material.condition,
-                observations: "",
-            })
-            onOpenChange(false)
+        if (!formData || !formData.loanDate || !formData.expectedReturnDate || !formData.borrowerName) {
+            return
         }
+
+        onAddLoan(formData)
+
+        // Reset form after successful submission
+        setFormData({
+            materialId: material.id,
+            quantity: 1,
+            borrowerName: "",
+            borrowerContact: "",
+            loanDate: new Date().toISOString().split("T")[0],
+            expectedReturnDate: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString().split("T")[0],
+            conditionAtLoan: material.condition,
+            notes: "",
+        })
+        onOpenChange(false)
     }
 
-    const updateFormData = (field: keyof typeof formData, value: any) => {
-        setFormData((prev) => ({...prev, [field]: value}))
+    const updateFormData = (field: keyof Omit<Loan, "id">, value: any) => {
+        setFormData((prev) => prev ? ({...prev, [field]: value}) : null)
     }
 
     return (
@@ -135,7 +133,7 @@ export function LoanDialog({open, material, onOpenChange, onAddLoan}: AddMateria
                     <Label htmlFor="observations">Observations</Label>
                     <Textarea
                         id="observations"
-                        value={!(formData) || formData.notes || ""}
+                        value={formData?.notes || ""}
                         onChange={(e) => updateFormData("notes", e.target.value)}
                         placeholder="Observations ou détails supplémentaires..."
                     />
