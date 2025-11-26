@@ -42,6 +42,7 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
 
   const [files, setFiles] = useState<File[] | undefined>()
   const [uploading, setUploading] = useState(false)
+  const [resizedImageUrl, setResizedImageUrl] = useState<string | null>(null)
 
   const handleDrop = (files: File[]) => {
     setFiles(files)
@@ -83,9 +84,15 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     try {
       let uploadedUrls: string[] = []
 
+      // Ajouter l'URL de l'image redimensionnée si elle existe
+      if (resizedImageUrl) {
+        uploadedUrls.push(resizedImageUrl)
+      }
+
+      // Upload seulement les fichiers qui ne sont pas encore dans S3
       if (files && files.length > 0) {
         const uploads = await Promise.all(files.map(uploadFileToS3))
-        uploadedUrls = uploads
+        uploadedUrls.push(...uploads)
       }
 
       const newMaterial = {
@@ -107,6 +114,7 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
         loanedQuantity: 0,
       })
       setFiles(undefined)
+      setResizedImageUrl(null)
       onOpenChange(false)
     } catch (err) {
       console.error("Erreur d'upload:", err)
@@ -172,9 +180,8 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
         const resizedImageUrl = json.data.s3Url;
         console.log("🖼️ Image redimensionnée disponible à:", resizedImageUrl);
         
-        const resizedFile = await urlToFile(resizedImageUrl, `resized_${file.name}`);
-        
-        setFiles(prev => prev ? [...prev, resizedFile] : [resizedFile]);
+        // Stocker l'URL de l'image redimensionnée qui est déjà dans S3
+        setResizedImageUrl(resizedImageUrl);
         
         setErrorFile(null);
         
@@ -188,21 +195,16 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     }
   };
 
-  // Fonction helper pour convertir une URL en File
-  const urlToFile = async (url: string, filename: string): Promise<File> => {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new File([blob], filename, { type: blob.type });
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[85vh] my-4 overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Ajouter un nouveau matériel</DialogTitle>
           <DialogDescription>Remplissez les informations du matériel à ajouter à l'inventaire.</DialogDescription>
         </DialogHeader>
 
+        <div className="overflow-y-auto flex-1 px-1 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           {/* 🧱 Champs inchangés */}
           <div className="space-y-2">
@@ -260,6 +262,33 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
           <Textarea id="observations" value={formData.observations || ""} onChange={(e) => updateFormData("observations", e.target.value)} placeholder="Observations ou détails supplémentaires..." />
         </div>
 
+        {/* Affichage de l'image redimensionnée */}
+        {resizedImageUrl && (
+          <div className="space-y-2">
+            <Label>Image redimensionnée (déjà dans S3)</Label>
+            <div className="flex items-center gap-4 p-4 border border-green-200 bg-green-50 rounded-lg">
+              <img 
+                src={resizedImageUrl} 
+                alt="Image redimensionnée" 
+                className="w-16 h-16 object-cover rounded-md border"
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-green-800">Image redimensionnée avec succès</p>
+                <p className="text-xs text-green-600">Cette image est prête pour l'upload</p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setResizedImageUrl(null)}
+                className="text-red-600 hover:text-red-700"
+              >
+                Supprimer
+              </Button>
+            </div>
+          </div>
+        )}
+
         <Dropzone
           accept={{ 'image/*': [] }}
           maxFiles={10}
@@ -280,12 +309,20 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
             alert(error?.message || "Erreur inconnue");
           }}
           src={files}
+          disabled={!!resizedImageUrl} // Désactiver si une image redimensionnée existe
         >
           <DropzoneEmptyState />
           <DropzoneContent />
         </Dropzone>
 
-        <DialogFooter>
+        {resizedImageUrl && (
+          <p className="text-xs text-amber-600 text-center">
+            💡 La dropzone est désactivée car vous avez déjà une image redimensionnée. Supprimez-la pour ajouter d'autres images.
+          </p>
+        )}
+        </div>
+
+        <DialogFooter className="flex-shrink-0">
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={uploading}>
             Annuler
           </Button>
