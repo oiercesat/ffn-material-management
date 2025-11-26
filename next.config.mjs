@@ -11,7 +11,7 @@ const nextConfig = {
   },
   output: 'export',
   trailingSlash: true,
-  basePath: '/mon-next',
+  basePath: '/ffn-frontend-nextjs-bucket',
 }
 
 export default nextConfig

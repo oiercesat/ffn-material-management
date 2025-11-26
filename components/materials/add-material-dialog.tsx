@@ -37,6 +37,9 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     loanedQuantity: 0,
   })
 
+  const [showResizeModal, setShowResizeModal] = useState(false)
+  const [errorFile, setErrorFile] = useState<File | null>(null)
+
   const [files, setFiles] = useState<File[] | undefined>()
   const [uploading, setUploading] = useState(false)
 
@@ -117,6 +120,81 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const handleResize = async (file: File | null) => {
+    if (!file) return;
+
+    try {
+      console.log("🚀 Début du redimensionnement pour:", file.name);
+      const base64 = await fileToBase64(file);
+      
+      console.log("📤 Envoi de la requête vers Lambda...");
+      
+      const resizeUrl = process.env.NEXT_PUBLIC_AWS_RESIZE_URL;
+      if (!resizeUrl) {
+        throw new Error("URL de redimensionnement non configurée");
+      }
+      
+      const res = await fetch(resizeUrl, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageData: base64,
+          width: 800,
+          height: 600,
+          format: 'jpeg',
+          quality: 80
+        })
+      });
+
+      console.log("📥 Statut de la réponse:", res.status);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("❌ Erreur API:", errorText);
+        throw new Error(`API Error: ${res.status} - ${errorText}`);
+      }
+
+      const json = await res.json();
+      console.log("✅ Réponse Lambda:", json);
+
+      if (json.success && json.data.s3Url) {
+        const resizedImageUrl = json.data.s3Url;
+        console.log("🖼️ Image redimensionnée disponible à:", resizedImageUrl);
+        
+        const resizedFile = await urlToFile(resizedImageUrl, `resized_${file.name}`);
+        
+        setFiles(prev => prev ? [...prev, resizedFile] : [resizedFile]);
+        
+        setErrorFile(null);
+        
+      } else {
+        throw new Error("Réponse Lambda invalide");
+      }
+
+    } catch (error) {
+      console.error("❌ Erreur resize:", error);
+      alert(`Erreur lors du redimensionnement: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
+  };
+
+  // Fonction helper pour convertir une URL en File
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
@@ -185,10 +263,22 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
         <Dropzone
           accept={{ 'image/*': [] }}
           maxFiles={10}
-          maxSize={1024 * 1024 * 10}
+          maxSize={1024 * 1024 * 2}
           minSize={1024}
           onDrop={handleDrop}
-          onError={console.error}
+          onDropRejected={(rejections) => {
+            const first = rejections[0];
+            const error = first?.errors?.[0];
+            const file = first?.file;
+
+            if (error?.code === "file-too-large") {
+              setErrorFile(file);
+              setShowResizeModal(true);
+              return;
+            }
+
+            alert(error?.message || "Erreur inconnue");
+          }}
           src={files}
         >
           <DropzoneEmptyState />
@@ -204,6 +294,32 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
           </Button>
         </DialogFooter>
       </DialogContent>
+      <Dialog open={showResizeModal} onOpenChange={setShowResizeModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Image trop grande</DialogTitle>
+            <DialogDescription>
+              L’image dépasse la taille maximale autorisée.  
+              Souhaitez-vous la redimensionner automatiquement ?
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResizeModal(false)}>
+              Annuler
+            </Button>
+
+            <Button
+              onClick={() => {
+                handleResize(errorFile)
+                setShowResizeModal(false)
+              }}
+            >
+              Redimensionner
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }
