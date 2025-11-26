@@ -12,7 +12,7 @@ import {Plus, Search} from "lucide-react"
 import {useMaterials, MaterialsProvider} from "@/providers/MaterialsProvider"
 import {useLoans} from "@/hooks/use-loans"
 import {MATERIAL_CATEGORIES} from "@/constants"
-import type {Material, MaterialCondition} from "@/types"
+import type {Loan, Material, MaterialCondition} from "@/types"
 
 import {StatsCards} from "@/components/dashboard/stats-cards"
 import {MaterialsTable} from "@/components/materials/materials-table"
