@@ -20,7 +20,7 @@ export function LoansTable({ loans, materials, onReturnMaterial, updateMaterial 
   }
   console.log("LoansTable rendered with loans:", loans)
 
-  if (loans.length === 0) {
+  if (!loans || !Array.isArray(loans) || loans.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">Aucun prêt en cours</p>
@@ -41,7 +41,7 @@ export function LoansTable({ loans, materials, onReturnMaterial, updateMaterial 
         </TableRow>
       </TableHeader>
       <TableBody>
-        {loans.map((loan) => (
+        {loans.filter(loan => loan && loan.id).map((loan) => (
           <TableRow key={loan.id}>
             <TableCell className="font-medium">{getMaterialName(loan.materialId)}</TableCell>
             <TableCell>

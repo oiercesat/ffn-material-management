@@ -131,12 +131,14 @@ export function useLoans() {
     }
 
     const getActiveLoans = () => {
-        return loans.filter((loan) => !loan.actualReturnDate)
+        if (!loans || !Array.isArray(loans)) return []
+        return loans.filter((loan) => loan && !loan.actualReturnDate)
     }
 
     const getOverdueLoans = () => {
+        if (!loans || !Array.isArray(loans)) return []
         const today = new Date().toISOString().split("T")[0]
-        return loans.filter((loan) => !loan.actualReturnDate && loan.expectedReturnDate < today)
+        return loans.filter((loan) => loan && !loan.actualReturnDate && loan.expectedReturnDate < today)
     }
 
     return {
