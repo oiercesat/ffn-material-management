@@ -11,6 +11,7 @@ interface LoansTableProps {
   loans: Loan[]
   materials: Material[]
   onReturnMaterial: (loanId: string, condition: MaterialCondition, materials: Material[], updateMaterial: (id: string, updates: Partial<Material>) => void) => void
+  updateMaterial: (id: string, updates: Partial<Material>) => void
 }
 
 export function LoansTable({ loans, materials, onReturnMaterial, updateMaterial }: LoansTableProps) {

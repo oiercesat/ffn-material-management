@@ -73,7 +73,14 @@ export function MaterialsTable({ materials, onLoanMaterial, onEditMaterial }: Ma
             <TableCell>
               {material.responsible}
             </TableCell>
-            <TableCell>{material.quantity - material.loanedQuantity}</TableCell>
+            <TableCell>
+              {material.quantity - (material.loanedQuantity || 0)} / {material.quantity}
+              {material.loanedQuantity && material.loanedQuantity > 0 && (
+                <span className="text-sm text-muted-foreground ml-2">
+                  ({material.loanedQuantity} prêté{material.loanedQuantity > 1 ? 's' : ''})
+                </span>
+              )}
+            </TableCell>
             <TableCell>
               {material.brand && material.model
                 ? `${material.brand} ${material.model}`
@@ -99,7 +106,7 @@ export function MaterialsTable({ materials, onLoanMaterial, onEditMaterial }: Ma
             </TableCell>
             <TableCell>
               <div className="flex space-x-2">
-                {material.status === "disponible" && material.quantity > 0 && (
+                {material.status === "disponible" && (material.quantity - (material.loanedQuantity || 0)) > 0 && (
                   <Button size="sm" onClick={() => onLoanMaterial(material)}>
                     Prêter
                   </Button>

@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useMemo, useState} from "react"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card"
@@ -59,6 +59,27 @@ function MaterialManagementContent() {
 
     const handleReturnMaterial = (loanId: string, condition: MaterialCondition) => {
         returnMaterial(loanId, condition, materials, updateMaterial)
+    }
+
+    const handleAddLoan = async (loan: Omit<Loan, "id">) => {
+        try {
+            // Ajouter le loan
+            await addLoan(loan)
+
+            // Mettre à jour le matériel
+            const material = materials.find(m => m.id === loan.materialId)
+            if (material) {
+                const newLoanedQuantity = (material.loanedQuantity || 0) + loan.quantity
+                const newStatus = (material.quantity - newLoanedQuantity <= 0) ? "prêté" : "disponible"
+
+                updateMaterial(loan.materialId, {
+                    loanedQuantity: newLoanedQuantity,
+                    status: newStatus
+                })
+            }
+        } catch (error) {
+            console.error('Error adding loan:', error)
+        }
     }
 
 
@@ -158,6 +179,7 @@ function MaterialManagementContent() {
                                 loans={activeLoans}
                                 materials={materials}
                                 onReturnMaterial={handleReturnMaterial}
+                                updateMaterial={updateMaterial}
                             />
                         </CardContent>
                     </Card>
@@ -175,7 +197,7 @@ function MaterialManagementContent() {
             <LoanDialog
                 open={isLoanDialogOpen}
                 onOpenChange={setIsLoanDialogOpen}
-                onAddLoan={addLoan}
+                onAddLoan={handleAddLoan}
                 material={loanMaterial}
             />
 
