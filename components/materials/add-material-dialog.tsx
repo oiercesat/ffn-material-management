@@ -107,15 +107,8 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          const base64 = reader.result.split(',')[1];
-          resolve(base64);
-        } else {
-          reject('Erreur de lecture du fichier');
-        }
-      }
-      reader.onerror = (error) => reject(error);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
     });
   };
 
@@ -123,10 +116,17 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     if (!file) return;
 
     try {
+      console.log("🚀 Début du redimensionnement pour:", file.name);
       const base64 = await fileToBase64(file);
       
-      // URL de votre Lambda
-      const res = await fetch("http://localhost:4566/restapis/u8kwtam4lj/test/_user_request_/resize", {
+      console.log("📤 Envoi de la requête vers Lambda...");
+      
+      const resizeUrl = process.env.NEXT_PUBLIC_AWS_RESIZE_URL;
+      if (!resizeUrl) {
+        throw new Error("URL de redimensionnement non configurée");
+      }
+      
+      const res = await fetch(resizeUrl, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -140,25 +140,42 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
         })
       });
 
+      console.log("📥 Statut de la réponse:", res.status);
+
       if (!res.ok) {
-        throw new Error(`API Error: ${res.status}`);
+        const errorText = await res.text();
+        console.error("❌ Erreur API:", errorText);
+        throw new Error(`API Error: ${res.status} - ${errorText}`);
       }
 
       const json = await res.json();
-      console.log("Réponse Lambda:", json);
+      console.log("✅ Réponse Lambda:", json);
 
-      if (json.success) {
-        // Récupérer l'image redimensionnée depuis S3
+      if (json.success && json.data.s3Url) {
         const resizedImageUrl = json.data.s3Url;
-        console.log("Image redimensionnée disponible à:", resizedImageUrl);
+        console.log("🖼️ Image redimensionnée disponible à:", resizedImageUrl);
         
-        // Vous pouvez maintenant utiliser cette URL pour afficher l'image
-        // ou la télécharger pour l'ajouter à vos files
+        const resizedFile = await urlToFile(resizedImageUrl, `resized_${file.name}`);
+        
+        setFiles(prev => prev ? [...prev, resizedFile] : [resizedFile]);
+        
+        setErrorFile(null);
+        
+      } else {
+        throw new Error("Réponse Lambda invalide");
       }
 
     } catch (error) {
-      console.error("Erreur resize:", error);
+      console.error("❌ Erreur resize:", error);
+      alert(`Erreur lors du redimensionnement: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
+  };
+
+  // Fonction helper pour convertir une URL en File
+  const urlToFile = async (url: string, filename: string): Promise<File> => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new File([blob], filename, { type: blob.type });
   };
 
   return (

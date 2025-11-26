@@ -13,11 +13,11 @@ Commandes pour héberger l'app sur le s3 :
 /!\ A faire depuis la racine du projet.
 
 ```bash
-aws --endpoint-url=http://localhost:4566 s3 mb s3://my-next ##Créer le bucket next
+aws --endpoint-url=http://localhost:4566 s3 mb s3://ffn-frontend-nextjs-bucket ##Créer le bucket next
 aws --endpoint-url=http://localhost:4566 s3 mb s3://images ##Créer le bucket images
 
-aws --endpoint-url=http://localhost:4566 s3api put-bucket-website --bucket mon-next --website-configuration file://website.json ##Config le bucket next pour afficher un site web static
+aws --endpoint-url=http://localhost:4566 s3api put-bucket-website --bucket ffn-frontend-nextjs-bucket --website-configuration file://website.json ##Config le bucket next pour afficher un site web static
 
 npm run build
-aws --endpoint-url=http://localhost:4566 s3 sync out/ s3://mon-next ##Push le build sur le s3
+aws --endpoint-url=http://localhost:4566 s3 sync out/ s3://ffn-frontend-nextjs-bucket ##Push le build sur le s3
 ```
