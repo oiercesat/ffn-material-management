@@ -1,8 +1,8 @@
 "use client"
 
-import {createContext, useContext, useState} from "react"
+import {createContext, useContext, useEffect, useState} from "react"
 import type {Material} from "@/types"
-import {INITIAL_MATERIALS} from "@/constants"
+import {apiClient} from "@/lib/api/client";
 
 type MaterialsContextType = {
     materials: Material[]
@@ -17,27 +17,31 @@ type MaterialsContextType = {
 const MaterialsContext = createContext<MaterialsContextType | undefined>(undefined)
 
 export function MaterialsProvider({children}: { children: React.ReactNode }) {
-    const [materials, setMaterials] = useState<Material[]>(INITIAL_MATERIALS)
+    const [materials, setMaterials] = useState<Material[]>([])
 
     const addMaterial = (material: Omit<Material, "id">) => {
         const newMaterial: Material = {
             ...material,
             id: Date.now().toString(),
         }
+        apiClient.createMaterial(material)
         setMaterials((prev) => [...prev, newMaterial])
     }
 
     const updateMaterial = (id: string, updates: Partial<Material>) => {
+        apiClient.updateMaterial(id, updates)
         setMaterials((prev) =>
             prev.map((material) => (material.id === id ? {...material, ...updates} : material))
         )
     }
 
     const deleteMaterial = (id: string) => {
+        apiClient.deleteMaterial(id)
         setMaterials((prev) => prev.filter((material) => material.id !== id))
     }
 
     const getMaterialById = (id: string) => {
+        apiClient.getMaterialById(id)
         return materials.find((material) => material.id === id)
     }
 
@@ -60,6 +64,14 @@ export function MaterialsProvider({children}: { children: React.ReactNode }) {
 
         return {total, available, loaned}
     }
+
+    useEffect(() => {
+        apiClient.getMaterials().then(response => {
+            if (response.data) {
+                setMaterials(response.data as Material[])
+            }
+        })
+    }, []);
 
     return (
         <MaterialsContext.Provider
