@@ -195,6 +195,50 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
     }
   };
 
+  const handleDeleteResizedImage = async () => {
+    if (!resizedImageUrl) return;
+
+    try {
+      console.log("🗑️ Suppression de l'image redimensionnée:", resizedImageUrl);
+      
+      const deleteUrl = process.env.NEXT_PUBLIC_AWS_DELETE_URL;
+      if (!deleteUrl) {
+        throw new Error("URL de suppression non configurée");
+      }
+      
+      const res = await fetch(deleteUrl, {
+        method: "DELETE",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName: resizedImageUrl
+        })
+      });
+
+      console.log("📥 Statut de la suppression:", res.status);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("❌ Erreur API suppression:", errorText);
+        throw new Error(`API Error: ${res.status} - ${errorText}`);
+      }
+
+      const json = await res.json();
+      console.log("✅ Réponse Lambda suppression:", json);
+
+      if (json.message && json.message.includes('deleted successfully')) {
+        console.log("🖼️ Image supprimée avec succès du bucket S3");
+        setResizedImageUrl(null);
+      } else {
+        throw new Error("Échec de la suppression");
+      }
+
+    } catch (error) {
+      console.error("❌ Erreur suppression:", error);
+      alert(`Erreur lors de la suppression: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -280,7 +324,7 @@ export function AddMaterialDialog({ open, onOpenChange, onAddMaterial }: AddMate
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setResizedImageUrl(null)}
+                onClick={() => handleDeleteResizedImage()}
                 className="text-red-600 hover:text-red-700"
               >
                 Supprimer
